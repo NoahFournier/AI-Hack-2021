@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html class="no-js" lang="">
+  <head>
+    <meta charset="utf-8" />
+    <title>ML Map</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin=""
+    ></script>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  </head>
+
+  <body>
+    <p>ML App</p>
+    <div id="mapid"></div>
+    <div id="value"></div>
+    <script>
+      let Options = {
+        zoomControl: true,
+        dragging: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: false,
+        minZoom: 10,
+      };
+
+      let mymap = L.map("mapid", Options)
+        .setView([42.361, -71.057], 10)
+        .setMaxBounds([
+          [42.03, -71.2895],
+          [42.381, -70.81],
+        ]);
+
+      L.tileLayer(
+        "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
+        {
+          attribution:
+            'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+          maxZoom: 18,
+          id: "mapbox/streets-v11",
+          tileSize: 512,
+          zoomOffset: -1,
+          accessToken:
+            "pk.eyJ1Ijoibm9haGY5OSIsImEiOiJja2xlY2VxN2wxN2plMnBzNHhkN2lhMWhqIn0.eWPYSi1GXH7cgZLprRjvrw",
+        }
+      ).addTo(mymap);
+
+      async function onMapClick(e) {
+        console.log("clicked");
+        let space = document.getElementById("value");
+        let data = JSON.stringify({
+          LON: e.latlng.lng,
+          LAT: e.latlng.lat,
+        });
+
+        let response = await fetch("/api", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }).then((res) => res.json());
+        console.log(response);
+        console.log(JSON.stringify(response));
+        let text = JSON.stringify(response);
+        space.innerHTML = text;
+      }
+
+      mymap.on("click", onMapClick);
+    </script>
+  </body>
+</html>
